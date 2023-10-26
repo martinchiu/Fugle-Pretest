@@ -38,6 +38,8 @@ async function rateLimiting (req, res, next) {
     const userId = Number(req.query.user)
     const ipKey = `${IPKEY}${ip}`
     const userKey = `${USERKEY}${userId}`
+    await redisClient.incr(ipKey)
+    await redisClient.incr(userKey)
     const ipCount = await redisClient.get(ipKey)
     const idCount = await redisClient.get(userKey)
     if (ipCount > 10 || idCount > 5) {
@@ -48,8 +50,6 @@ async function rateLimiting (req, res, next) {
         await redisClient.expire(ipKey, 60)
         await redisClient.expire(userKey, 60)
     }
-    await redisClient.incr(ipKey)
-    await redisClient.incr(userKey)
     next()
 }
 
